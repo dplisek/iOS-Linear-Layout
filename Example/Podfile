@@ -1,0 +1,13 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
+use_frameworks!
+
+target 'LinearLayoutForIOS', :exclusive => true do
+  pod "LinearLayoutForIOS", :path => "../"
+end
+
+target 'Tests', :exclusive => true do
+  pod "LinearLayoutForIOS", :path => "../"
+
+  
+end

@@ -1,0 +1,6 @@
+framework module LinearLayoutForIOS {
+  umbrella header "Pods-Tests-LinearLayoutForIOS-umbrella.h"
+
+  export *
+  module * { export * }
+}

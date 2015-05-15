@@ -1,0 +1,14 @@
+PODS:
+  - LinearLayoutForIOS (0.1.0)
+
+DEPENDENCIES:
+  - LinearLayoutForIOS (from `../`)
+
+EXTERNAL SOURCES:
+  LinearLayoutForIOS:
+    :path: ../
+
+SPEC CHECKSUMS:
+  LinearLayoutForIOS: 6b275d55ec8d9092b46d1325813111b4e043f6b8
+
+COCOAPODS: 0.36.3
