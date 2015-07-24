@@ -21,13 +21,26 @@ The members are regular subviews of the layout and can be treated as such.
 */
 public class HorizontalLinearLayoutView: LinearLayoutView {
 
-    override func sideConstraintsForMember(member: UIView) -> [AnyObject] {
-        return NSLayoutConstraint.constraintsWithVisualFormat(
-            "V:|-\(margin)-[member]-\(margin)-|",
-            options: nil,
-            metrics: nil,
-            views: ["member": member]
-        )
+    override func leadingSideConstraintForMember(member: UIView) -> NSLayoutConstraint {
+        return NSLayoutConstraint(
+            item: member,
+            attribute: NSLayoutAttribute.Top,
+            relatedBy: NSLayoutRelation.Equal,
+            toItem: self,
+            attribute: NSLayoutAttribute.Top,
+            multiplier: 1,
+            constant: leadingSideMargin)
+    }
+    
+    override func trailingSideConstraintForMember(member: UIView) -> NSLayoutConstraint {
+        return NSLayoutConstraint(
+            item: self,
+            attribute: NSLayoutAttribute.Bottom,
+            relatedBy: NSLayoutRelation.Equal,
+            toItem: member,
+            attribute: NSLayoutAttribute.Bottom,
+            multiplier: 1,
+            constant: trailingSideMargin)
     }
     
     override func spacingToContainerConstraintForMember(member: UIView) -> NSLayoutConstraint {
@@ -38,7 +51,7 @@ public class HorizontalLinearLayoutView: LinearLayoutView {
             toItem: self,
             attribute: NSLayoutAttribute.Leading,
             multiplier: 1.0,
-            constant: margin
+            constant: leadingMargin
         )
     }
     

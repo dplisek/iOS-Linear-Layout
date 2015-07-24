@@ -23,24 +23,49 @@ public class LinearLayoutView: UIView {
     
     /**
     
-    Defines the width of the border around the entire layout
+    Defines the point size of the space at the start of the layout
     
     */
-    public var margin: CGFloat = 0.0 {
+    public var leadingMargin: CGFloat = 0 {
         didSet {
             if spacingConstraints.count > 0 {
                 if let constraint = spacingConstraints[0] as? NSLayoutConstraint {
-                    constraint.constant = margin
-                }
-            }
-            for hConstraint in sideConstraints {
-                if let hConstraint = hConstraint as? NSLayoutConstraint {
-                    hConstraint.constant = margin
+                    constraint.constant = leadingMargin
                 }
             }
         }
     }
     
+    /**
+    
+    Defines the point size of the border along the leading side of the layout
+    
+    */
+    public var leadingSideMargin: CGFloat = 0 {
+        didSet {
+            for hConstraint in leadingSideConstraints {
+                if let hConstraint = hConstraint as? NSLayoutConstraint {
+                    hConstraint.constant = leadingSideMargin
+                }
+            }
+        }
+    }
+    
+    /**
+    
+    Defines the point size of the border along the trailing side of the layout
+    
+    */
+    public var trailingSideMargin: CGFloat = 0 {
+        didSet {
+            for hConstraint in trailingSideConstraints {
+                if let hConstraint = hConstraint as? NSLayoutConstraint {
+                    hConstraint.constant = trailingSideMargin
+                }
+            }
+        }
+    }
+
     /**
     
     Defines the spacing in between individual members of the layout
@@ -57,10 +82,22 @@ public class LinearLayoutView: UIView {
             }
         }
     }
+    
+    /**
+
+    The number of members currently added to the layout
+
+    */
+    public var memberCount: Int {
+        get {
+            return members.count
+        }
+    }
 
     let members = NSMutableArray()
     let spacingConstraints = NSMutableArray()
-    let sideConstraints = NSMutableArray()
+    let leadingSideConstraints = NSMutableArray()
+    let trailingSideConstraints = NSMutableArray()
     let memberSizes = NSMutableArray()
     
     /**
@@ -69,20 +106,23 @@ public class LinearLayoutView: UIView {
 
     */
     public convenience init() {
-        self.init(margin: 0, spacing: 0)
+        self.init(leadingMargin: 0, leadingSideMargin: 0, trailingSideMargin: 0, spacing: 0)
     }
     
     /**
     
     Initialize the linear layout with the specified margin and spacing.
     
-    :param: margin The width of the border around the entire layout
+    :param: leadingMargin The point size of the space at the start of the layout
+    :param: sideMargins The point size of the borders along the sides of the layout
     :param: spacing The spacing in between individual members of the layout
     
     */
-    public init(margin: CGFloat, spacing: CGFloat) {
+    public init(leadingMargin: CGFloat, leadingSideMargin: CGFloat, trailingSideMargin: CGFloat, spacing: CGFloat) {
         super.init(frame: CGRectZero)
-        self.margin = margin
+        self.leadingMargin = leadingMargin
+        self.leadingSideMargin = leadingSideMargin
+        self.trailingSideMargin = trailingSideMargin
         self.spacing = spacing
     }
     
@@ -153,10 +193,14 @@ public class LinearLayoutView: UIView {
     */
     public func removeMemberAtPosition(position: Int) {
         if position == NSNotFound || position > members.count - 1 { return }
-        if let constraints = sideConstraints[position] as? [NSLayoutConstraint] {
-            removeConstraints(constraints)
+        if let constraint = leadingSideConstraints[position] as? NSLayoutConstraint {
+            removeConstraint(constraint)
         }
-        sideConstraints.removeObjectAtIndex(position)
+        leadingSideConstraints.removeObjectAtIndex(position)
+        if let constraint = trailingSideConstraints[position] as? NSLayoutConstraint {
+            removeConstraint(constraint)
+        }
+        trailingSideConstraints.removeObjectAtIndex(position)
         if let constraint = spacingConstraints[position] as? NSLayoutConstraint {
             removeConstraint(constraint)
         }
@@ -207,9 +251,11 @@ public class LinearLayoutView: UIView {
     }
     
     func installSideConstraintsForMember(member: UIView, position: Int) -> [AnyObject] {
-        let constraints = sideConstraintsForMember(member)
-        sideConstraints.insertObject(constraints, atIndex: position)
-        return constraints
+        let leading = leadingSideConstraintForMember(member)
+        let trailing = trailingSideConstraintForMember(member)
+        leadingSideConstraints.insertObject(leading, atIndex: position)
+        trailingSideConstraints.insertObject(trailing, atIndex: position)
+        return [leading, trailing]
     }
     
     func installSpacingConstraintsForMember(member: UIView, position: Int) -> [AnyObject] {
@@ -238,9 +284,14 @@ public class LinearLayoutView: UIView {
         return constraint
     }
     
-    func sideConstraintsForMember(member: UIView) -> [AnyObject] {
+    func leadingSideConstraintForMember(member: UIView) -> NSLayoutConstraint {
         assertionFailure("Abstract method called.")
-        return []
+        return NSLayoutConstraint()
+    }
+    
+    func trailingSideConstraintForMember(member: UIView) -> NSLayoutConstraint {
+        assertionFailure("Abstract method called.")
+        return NSLayoutConstraint()
     }
     
     func spacingToContainerConstraintForMember(member: UIView) -> NSLayoutConstraint {
