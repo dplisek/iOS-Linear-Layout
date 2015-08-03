@@ -9,7 +9,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "LinearLayoutForIOS"
-  s.version          = "0.2.1"
+  s.version          = "0.2.2"
   s.summary          = "A horizontal and vertical linear layout to which you can add members at positions, set their sizes, and remove them."
   s.description      = <<-DESC
                        The layouts manage their members using auto layout constraints automatically. Don't give the members that you insert
