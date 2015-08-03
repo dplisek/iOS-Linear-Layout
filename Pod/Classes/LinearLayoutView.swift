@@ -28,10 +28,8 @@ public class LinearLayoutView: UIView {
     */
     public var leadingMargin: CGFloat = 0 {
         didSet {
-            if spacingConstraints.count > 0 {
-                if let constraint = spacingConstraints[0] as? NSLayoutConstraint {
-                    constraint.constant = leadingMargin
-                }
+            if let constraint = spacingConstraints.first {
+                constraint.constant = leadingMargin
             }
         }
     }
@@ -44,9 +42,7 @@ public class LinearLayoutView: UIView {
     public var leadingSideMargin: CGFloat = 0 {
         didSet {
             for hConstraint in leadingSideConstraints {
-                if let hConstraint = hConstraint as? NSLayoutConstraint {
-                    hConstraint.constant = leadingSideMargin
-                }
+                hConstraint.constant = leadingSideMargin
             }
         }
     }
@@ -59,9 +55,7 @@ public class LinearLayoutView: UIView {
     public var trailingSideMargin: CGFloat = 0 {
         didSet {
             for hConstraint in trailingSideConstraints {
-                if let hConstraint = hConstraint as? NSLayoutConstraint {
-                    hConstraint.constant = trailingSideMargin
-                }
+                hConstraint.constant = trailingSideMargin
             }
         }
     }
@@ -73,12 +67,8 @@ public class LinearLayoutView: UIView {
     */
     public var spacing: CGFloat = 0.0 {
         didSet {
-            for constraint in spacingConstraints {
-                if spacingConstraints.indexOfObject(constraint) > 0 {
-                    if let constraint = constraint as? NSLayoutConstraint {
-                        constraint.constant = spacing
-                    }
-                }
+            for var i = 1; i < spacingConstraints.count; i++ {
+                spacingConstraints[i].constant = spacing
             }
         }
     }
@@ -93,12 +83,12 @@ public class LinearLayoutView: UIView {
             return members.count
         }
     }
-
-    let members = NSMutableArray()
-    let spacingConstraints = NSMutableArray()
-    let leadingSideConstraints = NSMutableArray()
-    let trailingSideConstraints = NSMutableArray()
-    let memberSizes = NSMutableArray()
+    
+    var members: [UIView] = []
+    var spacingConstraints: [NSLayoutConstraint] = []
+    var leadingSideConstraints: [NSLayoutConstraint] = []
+    var trailingSideConstraints: [NSLayoutConstraint] = []
+    var memberSizes: [NSLayoutConstraint] = []
     
     /**
     
@@ -158,15 +148,13 @@ public class LinearLayoutView: UIView {
         member.setTranslatesAutoresizingMaskIntoConstraints(false)
         addSubview(member)
         if adjustedPosition < members.count {
-            if let constraint = spacingConstraints[adjustedPosition] as? NSLayoutConstraint {
-                removeConstraint(constraint)
-            }
-            spacingConstraints.removeObjectAtIndex(adjustedPosition)
+            removeConstraint(spacingConstraints[adjustedPosition])
+            spacingConstraints.removeAtIndex(adjustedPosition)
         }
         addConstraints(installSideConstraintsForMember(member, position: adjustedPosition))
         addConstraints(installSpacingConstraintsForMember(member, position: adjustedPosition))
-        members.insertObject(member, atIndex: adjustedPosition)
-        memberSizes.insertObject(NSLayoutConstraint(), atIndex: adjustedPosition)
+        members.insert(member, atIndex: adjustedPosition)
+        memberSizes.insert(NSLayoutConstraint(), atIndex: adjustedPosition)
     }
     
     /**
@@ -179,7 +167,12 @@ public class LinearLayoutView: UIView {
     
     */
     public func removeMember(member: UIView) {
-        removeMemberAtPosition(members.indexOfObject(member))
+        for var i = 0; i < members.count; i++ {
+            if members[i] == member {
+                removeMemberAtPosition(i)
+                return
+            }
+        }
     }
     
     /**
@@ -193,31 +186,21 @@ public class LinearLayoutView: UIView {
     */
     public func removeMemberAtPosition(position: Int) {
         if position == NSNotFound || position > members.count - 1 { return }
-        if let constraint = leadingSideConstraints[position] as? NSLayoutConstraint {
-            removeConstraint(constraint)
-        }
-        leadingSideConstraints.removeObjectAtIndex(position)
-        if let constraint = trailingSideConstraints[position] as? NSLayoutConstraint {
-            removeConstraint(constraint)
-        }
-        trailingSideConstraints.removeObjectAtIndex(position)
-        if let constraint = spacingConstraints[position] as? NSLayoutConstraint {
-            removeConstraint(constraint)
-        }
-        spacingConstraints.removeObjectAtIndex(position)
+        removeConstraint(leadingSideConstraints[position])
+        leadingSideConstraints.removeAtIndex(position)
+        removeConstraint(trailingSideConstraints[position])
+        trailingSideConstraints.removeAtIndex(position)
+        removeConstraint(spacingConstraints[position])
+        spacingConstraints.removeAtIndex(position)
         if position < members.count - 1 {
-            if let constraint = spacingConstraints[position] as? NSLayoutConstraint {
-                removeConstraint(constraint)
-            }
-            spacingConstraints.removeObjectAtIndex(position)
+            removeConstraint(spacingConstraints[position])
+            spacingConstraints.removeAtIndex(position)
         }
         members[position].removeFromSuperview()
-        members.removeObjectAtIndex(position)
-        memberSizes.removeObjectAtIndex(position)
+        members.removeAtIndex(position)
+        memberSizes.removeAtIndex(position)
         if position < members.count {
-            if let member = members[position] as? UIView {
-                addConstraint(installSpacingBeforeConstraintForMember(member, position: position))
-            }
+            addConstraint(installSpacingBeforeConstraintForMember(members[position], position: position))
         }
     }
     
@@ -235,26 +218,23 @@ public class LinearLayoutView: UIView {
     */
     public func setSizeOfMemberAtPosition(position: Int, relativeToLayout: Bool, size: Float) {
         if position == NSNotFound || position > members.count - 1 { return }
-        if let member = members[position] as? UIView {
-            if let constraint = memberSizes[position] as? NSLayoutConstraint {
-                member.removeConstraint(constraint)
-                removeConstraint(constraint)
-            }
-            let constraint = sizeConstraintForMember(member, relativeToLayout: relativeToLayout, size: size)
-            if relativeToLayout {
-                addConstraint(constraint)
-            } else {
-                member.addConstraint(constraint)
-            }
-            memberSizes[position] = constraint
+        let member = members[position]
+        member.removeConstraint(memberSizes[position])
+        removeConstraint(memberSizes[position])
+        let constraint = sizeConstraintForMember(member, relativeToLayout: relativeToLayout, size: size)
+        if relativeToLayout {
+            addConstraint(constraint)
+        } else {
+            member.addConstraint(constraint)
         }
+        memberSizes[position] = constraint
     }
     
     func installSideConstraintsForMember(member: UIView, position: Int) -> [AnyObject] {
         let leading = leadingSideConstraintForMember(member)
         let trailing = trailingSideConstraintForMember(member)
-        leadingSideConstraints.insertObject(leading, atIndex: position)
-        trailingSideConstraints.insertObject(trailing, atIndex: position)
+        leadingSideConstraints.insert(leading, atIndex: position)
+        trailingSideConstraints.insert(trailing, atIndex: position)
         return [leading, trailing]
     }
     
@@ -274,44 +254,38 @@ public class LinearLayoutView: UIView {
         default:
             constraint = spacingToPreviousConstraintForMember(member, position: position)
         }
-        spacingConstraints.insertObject(constraint, atIndex: position)
+        spacingConstraints.insert(constraint, atIndex: position)
         return constraint
     }
     
     func installSpacingAfterConstraintForMember(member: UIView, position: Int) -> NSLayoutConstraint {
         let constraint = spacingToNextConstraintForMember(member, position: position)
-        spacingConstraints.insertObject(constraint, atIndex: position + 1)
+        spacingConstraints.insert(constraint, atIndex: position + 1)
         return constraint
     }
     
     func leadingSideConstraintForMember(member: UIView) -> NSLayoutConstraint {
-        assertionFailure("Abstract method called.")
-        return NSLayoutConstraint()
+        assert(false, "Abstract method called.")
     }
     
     func trailingSideConstraintForMember(member: UIView) -> NSLayoutConstraint {
-        assertionFailure("Abstract method called.")
-        return NSLayoutConstraint()
+        assert(false, "Abstract method called.")
     }
     
     func spacingToContainerConstraintForMember(member: UIView) -> NSLayoutConstraint {
-        assertionFailure("Abstract method called.")
-        return NSLayoutConstraint()
+        assert(false, "Abstract method called.")
     }
     
     func spacingToPreviousConstraintForMember(member: UIView, position: Int) -> NSLayoutConstraint {
-        assertionFailure("Abstract method called.")
-        return NSLayoutConstraint()
+        assert(false, "Abstract method called.")
     }
     
     func spacingToNextConstraintForMember(member: UIView, position: Int) -> NSLayoutConstraint {
-        assertionFailure("Abstract method called.")
-        return NSLayoutConstraint()
+        assert(false, "Abstract method called.")
     }
     
     func sizeConstraintForMember(member: UIView, relativeToLayout: Bool, size: Float) -> NSLayoutConstraint {
-        assertionFailure("Abstract method called.")
-        return NSLayoutConstraint()
+        assert(false, "Abstract method called.")
     }
 }
 
