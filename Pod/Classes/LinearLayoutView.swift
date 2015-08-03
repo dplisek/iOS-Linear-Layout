@@ -265,27 +265,33 @@ public class LinearLayoutView: UIView {
     }
     
     func leadingSideConstraintForMember(member: UIView) -> NSLayoutConstraint {
-        assert(false, "Abstract method called.")
+        assertionFailure("Abstract method called.")
+        return NSLayoutConstraint()
     }
     
     func trailingSideConstraintForMember(member: UIView) -> NSLayoutConstraint {
-        assert(false, "Abstract method called.")
+        assertionFailure("Abstract method called.")
+        return NSLayoutConstraint()
     }
     
     func spacingToContainerConstraintForMember(member: UIView) -> NSLayoutConstraint {
-        assert(false, "Abstract method called.")
+        assertionFailure("Abstract method called.")
+        return NSLayoutConstraint()
     }
     
     func spacingToPreviousConstraintForMember(member: UIView, position: Int) -> NSLayoutConstraint {
-        assert(false, "Abstract method called.")
+        assertionFailure("Abstract method called.")
+        return NSLayoutConstraint()
     }
     
     func spacingToNextConstraintForMember(member: UIView, position: Int) -> NSLayoutConstraint {
-        assert(false, "Abstract method called.")
+        assertionFailure("Abstract method called.")
+        return NSLayoutConstraint()
     }
     
     func sizeConstraintForMember(member: UIView, relativeToLayout: Bool, size: Float) -> NSLayoutConstraint {
-        assert(false, "Abstract method called.")
+        assertionFailure("Abstract method called.")
+        return NSLayoutConstraint()
     }
 }
 
